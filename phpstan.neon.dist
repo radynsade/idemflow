@@ -1,0 +1,12 @@
+parameters:
+	level: max
+	bootstrapFiles:
+		- packages/core/vendor/autoload.php
+	parallel:
+		maximumNumberOfProcesses: 1
+	paths:
+		- .php-cs-fixer.dist.php
+		- .
+	excludePaths:
+		- vendor/*
+		- packages/*/vendor/*

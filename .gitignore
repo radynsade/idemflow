@@ -1,0 +1,30 @@
+# Root Composer installation
+/vendor/
+/auth.json
+/composer.phar
+
+# Standalone Composer installations in internal packages
+/packages/*/vendor/
+/packages/*/auth.json
+/packages/*/composer.phar
+/packages/*/composer.lock
+
+# PHP tooling
+.php-cs-fixer.cache
+.phpunit.cache/
+.phpunit.result.cache
+.phpstan.cache
+.psalm-cache/
+.infection.cache
+coverage/
+
+# Local environment overrides
+.env.local
+.env.local.php
+.env.*.local
+
+# IDE and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

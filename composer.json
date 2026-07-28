@@ -1,0 +1,24 @@
+{
+    "name": "radynsade/idemflow",
+    "description": "Development repository for IdemFlow packages",
+    "keywords": ["idempotency", "dev"],
+    "homepage": "https://github.com/radynsade/idemflow",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nikita Prokopenko",
+            "email": "radynje@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3",
+        "phpstan/phpstan": "^2"
+    },
+    "scripts": {
+        "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+        "analyse": "phpstan analyse --configuration=phpstan.neon.dist"
+    }
+}
