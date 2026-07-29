@@ -43,6 +43,7 @@ final class ExecutorTest extends TestCase {
 		$this->clock = new FrozenClock(new DateTimeImmutable('2026-07-24T12:00:00+00:00'));
 		$this->store = new InMemoryOperationStore();
 		$this->events = new CollectingEventDispatcher();
+
 		$this->executor = new Executor(
 			store: $this->store,
 			transactionBoundary: $this->store,
@@ -58,12 +59,11 @@ final class ExecutorTest extends TestCase {
 
 		$first = $this->executor->execute($operation, function () use (&$calls): array {
 			++$calls;
-
 			return ['orderId' => 42];
 		});
+
 		$second = $this->executor->execute($operation, function () use (&$calls): array {
 			++$calls;
-
 			return ['orderId' => 99];
 		});
 
@@ -90,6 +90,7 @@ final class ExecutorTest extends TestCase {
 				$this->operation(PayloadFingerprint::fromString('different')),
 				static fn (): array => ['orderId' => 99],
 			);
+
 			self::fail('A reused key with a different payload must be rejected.');
 		} catch (FingerprintMismatchException $exception) {
 			self::assertSame('orders.create', $exception->identity()->scope());
@@ -105,6 +106,7 @@ final class ExecutorTest extends TestCase {
 			$this->executor->execute($this->operation(), static function () use ($exception): never {
 				throw $exception;
 			});
+
 			self::fail('The callback exception must be propagated.');
 		} catch (RuntimeException $caught) {
 			self::assertSame($exception, $caught);
@@ -134,7 +136,6 @@ final class ExecutorTest extends TestCase {
 		}
 
 		$result = $this->executor->execute($this->operation(), static fn (): array => ['safe' => true]);
-
 		self::assertTrue($result->wasExecuted());
 		self::assertSame(1, $result->attempt());
 	}
@@ -142,9 +143,7 @@ final class ExecutorTest extends TestCase {
 	public function testAnExistingProcessingClaimIsReportedAsInProgress(): void {
 		$operation = $this->operation();
 		$this->store->claim($operation, 'other-owner', $this->clock->now());
-
 		$this->expectException(OperationInProgressException::class);
-
 		$this->executor->execute($operation, static fn (): array => []);
 	}
 
@@ -187,7 +186,6 @@ final class CollectingEventDispatcher implements EventDispatcherInterface {
 
 	public function dispatch(object $event): object {
 		$this->events[] = $event;
-
 		return $event;
 	}
 }

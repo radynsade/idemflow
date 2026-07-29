@@ -63,8 +63,4 @@ final readonly class OperationIdentity {
 	public function scope(): string {
 		return $this->scope;
 	}
-
-	public function storageKey(): string {
-		return $this->scope . "\0" . $this->keyHash;
-	}
 }

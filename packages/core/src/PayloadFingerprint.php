@@ -54,7 +54,15 @@ final readonly class PayloadFingerprint {
 	}
 
 	private static function canonicalize(mixed $value): mixed {
-		if (!is_array($value)) {
+		if (is_array($value)) {
+			if (!array_is_list($value)) {
+				ksort($value, SORT_STRING);
+			}
+
+			foreach ($value as $key => $item) {
+				$value[$key] = self::canonicalize($item);
+			}
+		} else {
 			if (is_object($value) || is_resource($value)) {
 				throw new InvalidOperationException('Fingerprint payload can contain only JSON-compatible values.');
 			}
@@ -62,16 +70,6 @@ final readonly class PayloadFingerprint {
 			if (is_float($value) && (is_infinite($value) || is_nan($value))) {
 				throw new InvalidOperationException('Fingerprint payload cannot contain non-finite floats.');
 			}
-
-			return $value;
-		}
-
-		if (!array_is_list($value)) {
-			ksort($value, SORT_STRING);
-		}
-
-		foreach ($value as $key => $item) {
-			$value[$key] = self::canonicalize($item);
 		}
 
 		return $value;

@@ -16,6 +16,7 @@ use IdemFlow\Core\Exception\StaleOperationClaimException;
 use IdemFlow\Core\Internal\InMemoryOperationRecord;
 use IdemFlow\Core\Operation;
 use IdemFlow\Core\OperationClaim;
+use IdemFlow\Core\OperationIdentity;
 use IdemFlow\Core\OperationStatus;
 use IdemFlow\Core\Store\Claim\Acquired;
 use IdemFlow\Core\Store\Claim\FingerprintMismatch;
@@ -31,7 +32,7 @@ final class InMemoryOperationStore implements OperationStoreInterface, Transacti
 	private array $records = [];
 
 	public function claim(Operation $operation, string $ownerId, DateTimeImmutable $now): ClaimDecision {
-		$storageKey = $operation->identity()->storageKey();
+		$storageKey = self::storageKey($operation->identity());
 		$record = $this->records[$storageKey] ?? null;
 
 		if (
@@ -56,41 +57,37 @@ final class InMemoryOperationStore implements OperationStoreInterface, Transacti
 				$now,
 			);
 
-			return new Acquired($claim);
-		}
-
-		if (!$record->fingerprint->equals($operation->fingerprint())) {
-			return new FingerprintMismatch(
+			$decision = new Acquired($claim);
+		} elseif (!$record->fingerprint->equals($operation->fingerprint())) {
+			$decision = new FingerprintMismatch(
 				$operation->identity(),
 				$record->fingerprint,
 				$operation->fingerprint(),
 			);
-		}
-
-		if ($record->status === OperationStatus::Processing) {
-			return new InProgress($record->identity, $record->attempt, $record->startedAt);
-		}
-
-		if (
+		} elseif ($record->status === OperationStatus::Processing) {
+			$decision = new InProgress($record->identity, $record->attempt, $record->startedAt);
+		} elseif (
 			$record->status === OperationStatus::Completed
 			&& $record->result !== null
 			&& $record->completedAt !== null
 			&& $record->expiresAt !== null
 		) {
-			return new Replay(new StoredOperationResult(
+			$decision = new Replay(new StoredOperationResult(
 				$record->result,
 				$record->attempt,
 				$record->completedAt,
 				$record->expiresAt,
 			));
+		} else {
+			throw new StaleOperationClaimException(new OperationClaim(
+				$record->identity,
+				$record->ownerId,
+				$record->attempt,
+				$record->startedAt,
+			));
 		}
 
-		throw new StaleOperationClaimException(new OperationClaim(
-			$record->identity,
-			$record->ownerId,
-			$record->attempt,
-			$record->startedAt,
-		));
+		return $decision;
 	}
 
 	public function complete(
@@ -103,7 +100,8 @@ final class InMemoryOperationStore implements OperationStoreInterface, Transacti
 			throw new InvalidOperationException('Operation expiration must be later than completion.');
 		}
 
-		$record = $this->records[$claim->identity()->storageKey()] ?? null;
+		$storageKey = self::storageKey($claim->identity());
+		$record = $this->records[$storageKey] ?? null;
 
 		if (
 			$record === null
@@ -115,7 +113,7 @@ final class InMemoryOperationStore implements OperationStoreInterface, Transacti
 			throw new StaleOperationClaimException($claim);
 		}
 
-		$this->records[$claim->identity()->storageKey()] = new InMemoryOperationRecord(
+		$this->records[$storageKey] = new InMemoryOperationRecord(
 			$record->identity,
 			$record->fingerprint,
 			OperationStatus::Completed,
@@ -136,11 +134,16 @@ final class InMemoryOperationStore implements OperationStoreInterface, Transacti
 		$snapshot = $this->records;
 
 		try {
-			return $callback();
+			$result = $callback();
 		} catch (Throwable $exception) {
 			$this->records = $snapshot;
-
 			throw $exception;
 		}
+
+		return $result;
+	}
+
+	private static function storageKey(OperationIdentity $identity): string {
+		return $identity->scope() . "\0" . $identity->keyHash();
 	}
 }

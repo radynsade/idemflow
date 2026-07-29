@@ -11,6 +11,9 @@ namespace IdemFlow\Core\Exception;
 use DateTimeImmutable;
 use IdemFlow\Core\OperationIdentity;
 
+/**
+ * Thrown when another owner is currently executing the operation.
+ */
 final class OperationInProgressException extends IdemFlowException {
 	public function __construct(
 		private readonly OperationIdentity $identity,

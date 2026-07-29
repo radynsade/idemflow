@@ -29,10 +29,12 @@ final readonly class JsonResultCodec implements ResultCodecInterface {
 		$this->assertCompatible($result);
 
 		try {
-			return json_decode($result->payload(), true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
+			$value = json_decode($result->payload(), true, 512, JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
 		} catch (JsonException $exception) {
 			throw new ResultDecodingFailedException('Stored JSON result is invalid.', previous: $exception);
 		}
+
+		return $value;
 	}
 
 	public function encode(mixed $value): EncodedResult {
@@ -66,12 +68,10 @@ final readonly class JsonResultCodec implements ResultCodecInterface {
 			throw new ResultEncodingFailedException('JSON result cannot contain non-finite floats.');
 		}
 
-		if (!is_array($value)) {
-			return;
-		}
-
-		foreach ($value as $item) {
-			self::assertJsonValue($item);
+		if (is_array($value)) {
+			foreach ($value as $item) {
+				self::assertJsonValue($item);
+			}
 		}
 	}
 

@@ -451,6 +451,10 @@ return (new PhpCsFixer\Config())
 			],
 		],
 		"phpdoc_single_line_var_spacing" => true,
+		"phpdoc_separation" => [
+			"groups" => [["*"]],
+			"skip_unlisted_annotations" => false,
+		],
 		"phpdoc_tag_casing" => [
 			"tags" => ["inheritDoc"],
 		],

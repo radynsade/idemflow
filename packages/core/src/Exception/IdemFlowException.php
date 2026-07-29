@@ -10,5 +10,8 @@ namespace IdemFlow\Core\Exception;
 
 use RuntimeException;
 
+/**
+ * Base exception for durable operation execution failures reported by IdemFlow.
+ */
 abstract class IdemFlowException extends RuntimeException {
 }

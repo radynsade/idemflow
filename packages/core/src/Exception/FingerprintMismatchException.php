@@ -11,6 +11,9 @@ namespace IdemFlow\Core\Exception;
 use IdemFlow\Core\OperationIdentity;
 use IdemFlow\Core\PayloadFingerprint;
 
+/**
+ * Thrown when an operation key is reused with a different payload fingerprint.
+ */
 final class FingerprintMismatchException extends IdemFlowException {
 	public function __construct(
 		private readonly OperationIdentity $identity,
