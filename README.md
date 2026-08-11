@@ -26,7 +26,7 @@ IdemFlow gives each logical business operation a stable identity and provides co
 
 ## Packages
 
-- [`idemflow/core`](packages/core) — framework-independent operation model, atomic executor, result codecs, store contracts, lifecycle events, and in-memory test implementation.
+- [`radynsade/idemflow-core`](packages/core) — framework-independent operation model, atomic executor, result codecs, store contracts, lifecycle events, and in-memory test implementation.
 
 ## License
 
