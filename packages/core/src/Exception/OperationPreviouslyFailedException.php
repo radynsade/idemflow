@@ -10,6 +10,9 @@ namespace IdemFlow\Core\Exception;
 
 use IdemFlow\Core\OperationIdentity;
 
+/**
+ * Thrown when the operation has a retained failure.
+ */
 final class OperationPreviouslyFailedException extends IdemFlowException {
 	public function __construct(
 		private readonly OperationIdentity $identity,

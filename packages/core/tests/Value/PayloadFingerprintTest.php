@@ -18,6 +18,7 @@ final class PayloadFingerprintTest extends TestCase {
 			'customer' => ['name' => 'Ada', 'id' => 10],
 			'items' => [['quantity' => 2, 'sku' => 'book']],
 		]);
+
 		$second = PayloadFingerprint::fromArray([
 			'items' => [['sku' => 'book', 'quantity' => 2]],
 			'customer' => ['id' => 10, 'name' => 'Ada'],
@@ -29,13 +30,11 @@ final class PayloadFingerprintTest extends TestCase {
 	public function testListOrderRemainsSignificant(): void {
 		$first = PayloadFingerprint::fromArray(['items' => ['a', 'b']]);
 		$second = PayloadFingerprint::fromArray(['items' => ['b', 'a']]);
-
 		self::assertFalse($first->equals($second));
 	}
 
 	public function testAHashMustBeASha256Digest(): void {
 		$this->expectException(InvalidOperationException::class);
-
 		PayloadFingerprint::fromHash('not-a-hash');
 	}
 }

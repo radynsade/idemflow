@@ -10,6 +10,9 @@ namespace IdemFlow\Core\Exception;
 
 use IdemFlow\Core\OperationIdentity;
 
+/**
+ * Thrown when the retained operation outcome is ambiguous and requires reconciliation.
+ */
 final class AmbiguousOperationException extends IdemFlowException {
 	public function __construct(
 		private readonly OperationIdentity $identity,

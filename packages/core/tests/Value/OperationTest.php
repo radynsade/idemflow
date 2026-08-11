@@ -19,13 +19,11 @@ use PHPUnit\Framework\TestCase;
 final class OperationTest extends TestCase {
 	public function testIdentityRejectsAnEmptyScope(): void {
 		$this->expectException(InvalidOperationException::class);
-
 		new OperationIdentity('', 'key');
 	}
 
 	public function testIdentityRejectsAnEmptyKey(): void {
 		$this->expectException(InvalidOperationException::class);
-
 		new OperationIdentity('orders.create', '');
 	}
 
@@ -42,12 +40,14 @@ final class OperationTest extends TestCase {
 
 	public function testRetentionIsDefensivelyCopied(): void {
 		$retention = new DateInterval('P1D');
+
 		$operation = Operation::atomic(
 			scope: 'orders.create',
 			key: 'key',
 			fingerprint: PayloadFingerprint::fromString('input'),
 			retention: $retention,
 		);
+
 		$retention->d = 10;
 
 		self::assertSame(

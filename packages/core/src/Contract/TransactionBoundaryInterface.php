@@ -14,9 +14,7 @@ interface TransactionBoundaryInterface {
 	 * Implementations must roll back and rethrow the original exception on failure.
 	 *
 	 * @template T
-	 *
 	 * @param callable(): T $callback
-	 *
 	 * @return T
 	 */
 	public function transactional(callable $callback): mixed;

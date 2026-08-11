@@ -29,7 +29,6 @@ final class InMemoryOperationStoreTest extends TestCase {
 		$decision = $store->claim($operation, 'actual-owner', $now);
 		self::assertInstanceOf(Acquired::class, $decision);
 		$stale = new OperationClaim($operation->identity(), 'stale-owner', 1, $now);
-
 		$this->expectException(StaleOperationClaimException::class);
 
 		$store->complete(

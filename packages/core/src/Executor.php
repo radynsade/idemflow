@@ -20,9 +20,13 @@ use IdemFlow\Core\Event\OperationExecuted;
 use IdemFlow\Core\Event\OperationFailed;
 use IdemFlow\Core\Event\OperationReplayed;
 use IdemFlow\Core\Exception\AmbiguousOperationException;
-use IdemFlow\Core\Exception\FingerprintMismatchException as FingerprintMismatchException;
+use IdemFlow\Core\Exception\FingerprintMismatchException;
 use IdemFlow\Core\Exception\OperationInProgressException;
 use IdemFlow\Core\Exception\OperationPreviouslyFailedException;
+use IdemFlow\Core\Exception\ResultCodecMismatchException;
+use IdemFlow\Core\Exception\ResultDecodingFailedException;
+use IdemFlow\Core\Exception\ResultEncodingFailedException;
+use IdemFlow\Core\Exception\StaleOperationClaimException;
 use IdemFlow\Core\Internal\CallbackExecutionFailed;
 use IdemFlow\Core\Store\Claim\Acquired;
 use IdemFlow\Core\Store\Claim\Ambiguous;
@@ -57,10 +61,16 @@ final class Executor {
 
 	/**
 	 * @template T
-	 *
 	 * @param callable(): T $callback
-	 *
 	 * @return ExecutionResult<T>
+	 * @throws AmbiguousOperationException When the retained operation outcome is ambiguous.
+	 * @throws FingerprintMismatchException When the operation key is reused with a different fingerprint.
+	 * @throws OperationInProgressException When another owner is currently executing the operation.
+	 * @throws OperationPreviouslyFailedException When the operation has a retained failure.
+	 * @throws ResultCodecMismatchException When the retained result uses a different codec.
+	 * @throws ResultDecodingFailedException When the retained result cannot be decoded.
+	 * @throws ResultEncodingFailedException When the callback result cannot be encoded.
+	 * @throws StaleOperationClaimException When the claim loses ownership before completion.
 	 */
 	public function execute(Operation $operation, callable $callback): ExecutionResult {
 		/** @var list<object> $pendingEvents */
@@ -78,82 +88,85 @@ final class Executor {
 
 				if ($decision instanceof Replay) {
 					$stored = $decision->storedResult();
+
 					$pendingEvents[] = new OperationReplayed(
 						$operation->identity(),
 						$stored->attempt(),
 						$now,
 					);
 
-					return ExecutionResult::replayed(
+					$result = ExecutionResult::replayed(
 						$this->resultCodec->decode($stored->result()),
 						$stored->attempt(),
 					);
-				}
+				} else {
+					if ($decision instanceof InProgress) {
+						throw new OperationInProgressException(
+							$decision->identity(),
+							$decision->attempt(),
+							$decision->startedAt(),
+						);
+					}
 
-				if ($decision instanceof InProgress) {
-					throw new OperationInProgressException(
-						$decision->identity(),
-						$decision->attempt(),
-						$decision->startedAt(),
+					if ($decision instanceof FingerprintMismatch) {
+						$pendingEvents[] = new FingerprintMismatchDetected(
+							$decision->identity(),
+							$decision->stored(),
+							$decision->received(),
+							$now,
+						);
+
+						throw new FingerprintMismatchException(
+							$decision->identity(),
+							$decision->stored(),
+							$decision->received(),
+						);
+					}
+
+					if ($decision instanceof Failed) {
+						throw new OperationPreviouslyFailedException(
+							$decision->identity(),
+							$decision->attempt(),
+							$decision->isRetryable(),
+						);
+					}
+
+					if ($decision instanceof Ambiguous) {
+						throw new AmbiguousOperationException($decision->identity(), $decision->attempt());
+					}
+
+					if (!$decision instanceof Acquired) {
+						throw new LogicException(sprintf('Unsupported claim decision %s.', $decision::class));
+					}
+
+					$claim = $decision->claim();
+
+					try {
+						$value = $callback();
+					} catch (Throwable $exception) {
+						throw new CallbackExecutionFailed($claim, $this->clock->now(), $exception);
+					}
+
+					$completedAt = $this->clock->now();
+					$encoded = $this->resultCodec->encode($value);
+
+					$this->store->complete(
+						$claim,
+						$encoded,
+						$completedAt,
+						$operation->expiresAt($completedAt),
 					);
+
+					$pendingEvents = [
+						new OperationClaimed($operation->identity(), $claim->attempt(), $claim->startedAt()),
+						new OperationExecuted($operation->identity(), $claim->attempt(), $completedAt),
+						new OperationCompleted($operation->identity(), $claim->attempt(), $completedAt),
+					];
+
+					$result = ExecutionResult::executed($value, $claim->attempt());
 				}
 
-				if ($decision instanceof FingerprintMismatch) {
-					$pendingEvents[] = new FingerprintMismatchDetected(
-						$decision->identity(),
-						$decision->stored(),
-						$decision->received(),
-						$now,
-					);
-
-					throw new FingerprintMismatchException(
-						$decision->identity(),
-						$decision->stored(),
-						$decision->received(),
-					);
-				}
-
-				if ($decision instanceof Failed) {
-					throw new OperationPreviouslyFailedException(
-						$decision->identity(),
-						$decision->attempt(),
-						$decision->isRetryable(),
-					);
-				}
-
-				if ($decision instanceof Ambiguous) {
-					throw new AmbiguousOperationException($decision->identity(), $decision->attempt());
-				}
-
-				if (!$decision instanceof Acquired) {
-					throw new LogicException(sprintf('Unsupported claim decision %s.', $decision::class));
-				}
-
-				$claim = $decision->claim();
-
-				try {
-					$value = $callback();
-				} catch (Throwable $exception) {
-					throw new CallbackExecutionFailed($claim, $this->clock->now(), $exception);
-				}
-
-				$completedAt = $this->clock->now();
-				$encoded = $this->resultCodec->encode($value);
-
-				$this->store->complete(
-					$claim,
-					$encoded,
-					$completedAt,
-					$operation->expiresAt($completedAt),
-				);
-
-				$pendingEvents = [
-					new OperationClaimed($operation->identity(), $claim->attempt(), $claim->startedAt()),
-					new OperationExecuted($operation->identity(), $claim->attempt(), $completedAt),
-					new OperationCompleted($operation->identity(), $claim->attempt(), $completedAt),
-				];
-
-				return ExecutionResult::executed($value, $claim->attempt());
+				return $result;
 			});
 		} catch (CallbackExecutionFailed $exception) {
 			$previous = $exception->getPrevious();

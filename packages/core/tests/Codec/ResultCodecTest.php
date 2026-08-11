@@ -39,21 +39,17 @@ final class ResultCodecTest extends TestCase {
 
 	public function testJsonCodecDoesNotSerializeObjectsImplicitly(): void {
 		$this->expectException(ResultEncodingFailedException::class);
-
 		(new JsonResultCodec())->encode(new stdClass());
 	}
 
 	public function testAResultCannotBeDecodedByAnotherCodec(): void {
 		$encoded = (new ScalarResultCodec())->encode('value');
-
 		$this->expectException(ResultCodecMismatchException::class);
-
 		(new JsonResultCodec())->decode($encoded);
 	}
 
 	public function testScalarPayloadLimitIsEnforced(): void {
 		$this->expectException(ResultEncodingFailedException::class);
-
 		(new ScalarResultCodec(3))->encode('long');
 	}
 }

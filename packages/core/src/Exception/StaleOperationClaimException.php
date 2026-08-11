@@ -10,6 +10,9 @@ namespace IdemFlow\Core\Exception;
 
 use IdemFlow\Core\OperationClaim;
 
+/**
+ * Thrown when a claim no longer owns the operation state it attempts to mutate.
+ */
 final class StaleOperationClaimException extends IdemFlowException {
 	public function __construct(private readonly OperationClaim $claim) {
 		parent::__construct(sprintf(

@@ -10,5 +10,8 @@ namespace IdemFlow\Core\Exception;
 
 use InvalidArgumentException;
 
+/**
+ * Thrown when an operation or one of its value objects contains invalid input.
+ */
 final class InvalidOperationException extends InvalidArgumentException {
 }

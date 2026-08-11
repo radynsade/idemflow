@@ -24,9 +24,7 @@ final readonly class ExecutionResult {
 
 	/**
 	 * @template TValue
-	 *
 	 * @param TValue $value
-	 *
 	 * @return self<TValue>
 	 */
 	public static function executed(mixed $value, int $attempt): self {
@@ -35,9 +33,7 @@ final readonly class ExecutionResult {
 
 	/**
 	 * @template TValue
-	 *
 	 * @param TValue $value
-	 *
 	 * @return self<TValue>
 	 */
 	public static function replayed(mixed $value, int $attempt): self {
