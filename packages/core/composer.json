@@ -1,6 +1,25 @@
 {
     "name": "radynsade/idemflow-core",
     "description": "Framework-agnostic durable idempotency engine for PHP",
+    "keywords": [
+        "idempotency",
+        "idempotent",
+        "atomic",
+        "atomicity",
+        "retries"
+    ],
+    "homepage": "https://github.com/radynsade/idemflow",
+    "support": {
+        "issues": "https://github.com/radynsade/idemflow/issues",
+        "source": "https://github.com/radynsade/idemflow"
+    },
+    "authors": [
+        {
+            "name": "Nikita Prokopenko",
+            "email": "radynje@gmail.com"
+        }
+    ],
+    "license": "MIT",
     "type": "library",
     "require": {
         "php": "^8.4",
@@ -10,7 +29,6 @@
     "require-dev": {
         "phpunit/phpunit": "^13"
     },
-    "license": "MIT",
     "autoload": {
         "psr-4": {
             "IdemFlow\\Core\\": "src/"
@@ -23,11 +41,5 @@
     },
     "scripts": {
         "test": "phpunit --configuration=phpunit.xml.dist"
-    },
-    "authors": [
-        {
-            "name": "Nikita Prokopenko",
-            "email": "radynje@gmail.com"
-        }
-    ]
+    }
 }
