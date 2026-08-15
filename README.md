@@ -27,6 +27,7 @@ IdemFlow gives each logical business operation a stable identity and provides co
 ## Packages
 
 - [`radynsade/idemflow-core`](packages/core) — framework-independent operation model, atomic executor, result codecs, store contracts, lifecycle events, and in-memory test implementation.
+- [`radynsade/idemflow-dbal`](packages/dbal) — Doctrine DBAL persistence adapter.
 
 ## License
 

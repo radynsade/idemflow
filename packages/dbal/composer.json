@@ -1,0 +1,60 @@
+{
+    "name": "radynsade/idemflow-dbal",
+    "description": "Doctrine DBAL persistence adapter for IdemFlow Core",
+    "keywords": [
+        "idempotency",
+        "idempotent",
+        "doctrine",
+        "dbal",
+        "database"
+    ],
+    "homepage": "https://github.com/radynsade/idemflow",
+    "support": {
+        "issues": "https://github.com/radynsade/idemflow/issues",
+        "source": "https://github.com/radynsade/idemflow"
+    },
+    "authors": [
+        {
+            "name": "Nikita Prokopenko",
+            "email": "radynje@gmail.com"
+        }
+    ],
+    "license": "MIT",
+    "type": "library",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../core",
+            "options": {
+                "versions": {
+                    "radynsade/idemflow-core": "0.1.0"
+                }
+            }
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "doctrine/dbal": "^4.4",
+        "radynsade/idemflow-core": "^0.1",
+        "psr/clock": "^1.0",
+        "psr/event-dispatcher": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^13",
+        "phpstan/phpstan": "^2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "IdemFlow\\DBAL\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "IdemFlow\\DBAL\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --configuration=phpunit.xml.dist",
+        "analyse": "phpstan analyse --configuration=phpstan.neon.dist"
+    }
+}
