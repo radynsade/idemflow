@@ -40,7 +40,7 @@ final class PostgresOperationRecordRepositoryTest extends TestCase {
 					&& $parameters['completedAt'] === null
 					&& $parameters['expiresAt'] === null),
 				self::callback(static fn (array $types): bool => $types['startedAt'] === Types::STRING
-						&& $types['resultPayload'] === Types::JSONB
+						&& $types['resultPayload'] === Types::TEXT
 					&& $types['completedAt'] === Types::STRING
 					&& $types['expiresAt'] === Types::STRING),
 			)
@@ -88,7 +88,7 @@ final class PostgresOperationRecordRepositoryTest extends TestCase {
 	}
 
 	#[DataProvider('resultPayloads')]
-	public function testItHydratesJsonbResultFields(string $payload): void {
+	public function testItHydratesTextResultPayload(string $payload): void {
 		$connection = $this->getMockBuilder(Connection::class)
 			->disableOriginalConstructor()
 			->onlyMethods(['executeQuery', 'getDatabasePlatform'])
@@ -103,7 +103,7 @@ final class PostgresOperationRecordRepositoryTest extends TestCase {
 			'owner_id' => 'owner-1',
 			'attempt' => '1',
 			'started_at' => '2026-08-14 10:00:00+00',
-			'result_payload' => json_encode($payload, JSON_THROW_ON_ERROR),
+			'result_payload' => $payload,
 			'result_codec' => 'custom',
 			'result_version' => '1',
 			'result_type' => 'text',
@@ -153,7 +153,7 @@ final class PostgresOperationRecordRepositoryTest extends TestCase {
 					&& $parameters['replacementExpiresAt'] === '2026-08-15 10:01:00.345678+00:00'
 					&& $parameters['expectedStartedAt'] === '2026-08-14 10:00:00.123456+00:00'),
 				self::callback(static fn (array $types): bool => $types['replacementStartedAt'] === Types::STRING
-						&& $types['replacementResultPayload'] === Types::JSONB
+						&& $types['replacementResultPayload'] === Types::TEXT
 						&& $types['replacementResultCodec'] === Types::STRING
 						&& $types['replacementResultType'] === Types::STRING
 						&& $types['replacementResultMetadata'] === Types::JSONB
@@ -232,5 +232,6 @@ final class PostgresOperationRecordRepositoryTest extends TestCase {
 	public static function resultPayloads(): iterable {
 		yield 'empty payload' => [''];
 		yield 'UTF-8 payload' => ['Результат'];
+		yield 'non-JSON payload' => ['plain text / "quoted"'];
 	}
 }

@@ -105,7 +105,7 @@ final class BaseOperationRecordRepositoryTest extends TestCase {
 		self::assertIsArray($stored);
 		self::assertSame(OperationStatus::Completed->value, $stored['status']);
 		self::assertIsString($stored['result_payload']);
-		self::assertSame('Результат', json_decode($stored['result_payload'], true));
+		self::assertSame('Результат', $stored['result_payload']);
 		self::assertIsString($stored['result_metadata']);
 		self::assertSame($metadata, json_decode($stored['result_metadata'], true));
 

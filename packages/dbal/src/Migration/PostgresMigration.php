@@ -31,7 +31,7 @@ final class PostgresMigration implements MigrationInterface {
 			"owner_id" text not null,
 			"attempt" bigint not null,
 			"started_at" timestamp(6) with time zone not null,
-			"result_payload" jsonb,
+			"result_payload" text,
 			"result_codec" varchar(100),
 			"result_version" integer,
 			"result_type" text,

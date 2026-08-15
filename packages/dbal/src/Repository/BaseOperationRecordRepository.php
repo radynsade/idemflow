@@ -76,7 +76,7 @@ abstract class BaseOperationRecordRepository implements OperationRecordRepositor
 					$this->stringColumn($result, 'result_codec'),
 					$this->positiveIntegerColumn($result, 'result_version'),
 					$this->stringColumn($result, 'result_type'),
-					$this->jsonStringColumn($result, 'result_payload'),
+					$this->stringColumn($result, 'result_payload'),
 					$this->metadataColumn($result, 'result_metadata'),
 				);
 			}
@@ -169,7 +169,7 @@ abstract class BaseOperationRecordRepository implements OperationRecordRepositor
 				'replacementOwnerId' => Types::STRING,
 				'replacementAttempt' => Types::INTEGER,
 				'replacementStartedAt' => $this->dateTimeParameterType(),
-				'replacementResultPayload' => Types::JSONB,
+				'replacementResultPayload' => Types::TEXT,
 				'replacementResultCodec' => Types::STRING,
 				'replacementResultVersion' => Types::INTEGER,
 				'replacementResultType' => Types::STRING,
@@ -235,19 +235,6 @@ abstract class BaseOperationRecordRepository implements OperationRecordRepositor
 
 		if (!is_array($decoded)) {
 			throw new UnexpectedValueException(sprintf('Database column "%s" must contain a JSON array.', $column));
-		}
-
-		return $decoded;
-	}
-
-	/**
-	 * @param array<string, mixed> $row
-	 */
-	private function jsonStringColumn(array $row, string $column): string {
-		$decoded = $this->jsonColumn($row, $column);
-
-		if (!is_string($decoded)) {
-			throw new UnexpectedValueException(sprintf('Database column "%s" must contain a JSON string.', $column));
 		}
 
 		return $decoded;

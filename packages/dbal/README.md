@@ -47,9 +47,6 @@ $connection->executeStatement('create schema if not exists idemflow');
 (new PostgresMigration($connection, 'idemflow.operations'))->up();
 ```
 
-Encoded result payloads and metadata are stored as JSONB. Payloads, metadata keys and string metadata
-values must be valid UTF-8.
-
 ## Runtime configuration
 
 Use the exact same `Connection` instance for the repository, transaction boundary, PostgreSQL clock

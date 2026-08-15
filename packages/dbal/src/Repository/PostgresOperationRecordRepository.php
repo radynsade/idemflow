@@ -88,7 +88,7 @@ class PostgresOperationRecordRepository extends BaseOperationRecordRepository {
 			'ownerId' => Types::STRING,
 			'attempt' => Types::INTEGER,
 			'startedAt' => $this->dateTimeParameterType(),
-			'resultPayload' => Types::JSONB,
+			'resultPayload' => Types::TEXT,
 			'resultCodec' => Types::STRING,
 			'resultVersion' => Types::INTEGER,
 			'resultType' => Types::STRING,
