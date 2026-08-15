@@ -22,7 +22,7 @@ final class PostgresMigrationTest extends TestCase {
 			->with(self::callback(static fn (string $sql): bool => str_contains(
 				$sql,
 				'create table idemflow.operations',
-			) && str_contains($sql, '"result_payload" jsonb')
+			) && str_contains($sql, '"result_payload" text')
 				&& str_contains($sql, '"result_metadata" jsonb')))
 			->willReturn(0);
 
